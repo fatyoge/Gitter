@@ -11,9 +11,9 @@
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
     "cors": "^2.8.4",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.15",
     "memory-cache": "^0.2.0",
     "node-fetch": "^2.2.0",
-    "wx-server-sdk": "latest"
+    "wx-server-sdk": "^2.0.2"
   }
 }

@@ -71,36 +71,39 @@ class Login extends Component {
   }
 
   getUserInfo () {
-    const { current, token, username, password } = this.state
-    let authorization = ''
-    if (current === 0) {
-      if (token.length === 0) {
-        Taro.showToast({
-          title: 'Please input token',
-          icon: 'none'
-        })
-      } else {
-        authorization = 'token ' + token
-      }
+    //const { current, token, username, password } = this.state
+    //let authorization = ''
+    //if (current === 0) {
+    //  if (token.length === 0) {
+    //    Taro.showToast({
+    //      title: 'Please input token',
+    //      icon: 'none'
+    //    })
+    //  } else {
+    //    authorization = 'token ' + token
+    //  }
+    //} else {
+    //  if (username.length === 0) {
+    //    Taro.showToast({
+    //      title: 'Please input username',
+    //      icon: 'none'
+    //    })
+    //  } else if (password.length === 0) {
+    //    Taro.showToast({
+    //      title: 'Please input password',
+    //      icon: 'none'
+    //    })
+    //  } else {
+    //    authorization = 'Basic ' + base64_encode(username + ':' + password)
+    //  }
+    //}
+    const value = Taro.getStorageSync('userInfo')
+    if (value) {
+      Taro.showToast({
+            title: '欢迎回来',
+            icon: 'none'
+          })
     } else {
-      if (username.length === 0) {
-        Taro.showToast({
-          title: 'Please input username',
-          icon: 'none'
-        })
-      } else if (password.length === 0) {
-        Taro.showToast({
-          title: 'Please input password',
-          icon: 'none'
-        })
-      } else {
-        authorization = 'Basic ' + base64_encode(username + ':' + password)
-      }
-    }
-
-    if (authorization.length !== 0) {
-      Taro.setStorageSync('Authorization', authorization)
-      Taro.showLoading({title: GLOBAL_CONFIG.LOADING_TEXT})
       userAction.getUserInfo().then((res)=>{
         Taro.hideLoading()
         if (res.statusCode !== HTTP_STATUS.SUCCESS) {
@@ -108,14 +111,32 @@ class Login extends Component {
             title: res.data.message,
             icon: 'none'
           })
-          Taro.setStorageSync('Authorization', '')
         } else {
           Taro.eventCenter.trigger('login_success')
           Taro.setStorageSync('userInfo', res.data)
           Taro.navigateBack()
         }
-      })
+      })  
     }
+
+    //if (authorization.length !== 0) {
+    //  Taro.setStorageSync('Authorization', authorization)
+    //  Taro.showLoading({title: GLOBAL_CONFIG.LOADING_TEXT})
+    //  userAction.getUserInfo().then((res)=>{
+    //    Taro.hideLoading()
+    //    if (res.statusCode !== HTTP_STATUS.SUCCESS) {
+    //      Taro.showToast({
+    //        title: res.data.message,
+    //        icon: 'none'
+    //      })
+    //      Taro.setStorageSync('Authorization', '')
+    //    } else {
+    //      Taro.eventCenter.trigger('login_success')
+    //      Taro.setStorageSync('userInfo', res.data)
+    //      Taro.navigateBack()
+    //    }
+    //  })
+    //}
   }
 
   handleclickedTokenAddress() {

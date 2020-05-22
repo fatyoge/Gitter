@@ -5,8 +5,10 @@ const Towxml = require('towxml');
 
 const towxml = new Towxml();
 
-cloud.init()
-
+cloud.init({
+  traceUser: true,
+  env: 'dev-study-62lv2'
+})
 // 云函数入口函数
 exports.main = async (event, context) => {
   const { func, type, content } = event

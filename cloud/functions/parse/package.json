@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "towxml": "^2.1.4",
-    "wx-server-sdk": "latest"
+    "towxml": "^3.0.6",
+    "wx-server-sdk": "^2.0.2"
   }
 }

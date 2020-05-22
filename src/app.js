@@ -23,7 +23,8 @@ class App extends Component {
   config = {
     pages: [
       'pages/index/index',
-      'pages/index/favoriteLanguages',
+      //'pages/index/favoriteLanguages',
+      'pages/index/quickClasses',
       'pages/account/index',
       'pages/git/git',
       'pages/git/tutorials',
@@ -82,15 +83,15 @@ class App extends Component {
       borderStyle: 'white'
     },
     navigateToMiniProgramAppIdList: [
-      'wx8abaf00ee8c3202e'
+      'wx0c3f3de20eb078fb'
     ]
   }
 
   componentDidMount() {
     this.updateApp()
     wx.cloud.init({
-      env: 'gitter-prod-pkqn3',
-      traceUser: true
+      traceUser: true,
+      env: 'dev-study-62lv2'
     })
     this.loadOpenId()
     this.loadConfig()
@@ -110,6 +111,11 @@ class App extends Component {
       name: 'openid',
     }).then(res => {
       const openid = res.result.openid
+      console.log('云函数获取到的openid: ', res.result)
+      Taro.showToast({
+        title: '欢迎回来 '+res.result.openid,
+        icon: 'none'
+      })
       setGlobalData('openid', openid || null)
       if (openid) {
         Taro.setStorageSync('openid', openid)
@@ -117,6 +123,25 @@ class App extends Component {
     }).catch(err => {
       console.log('openid err', err)
     })
+
+    // 获取用户信息
+    //wx.getSetting({
+    //  success: res => {
+    //    if (res.authSetting['scope.userInfo']) {
+    //      // 已经授权，可以直接调用 getUserInfo 获取头像昵称，不会弹框
+    //      wx.getUserInfo({
+    //        success: res => {
+    //          this.setData({
+    //            avatarUrl: res.userInfo.avatarUrl,
+    //            userInfo: res.userInfo
+    //          })
+    //        }
+    //      })
+    //      console.log('avatarUrl: ', this.avatarUrl)
+    //      console.log('userInfo: ', this.userInfo)
+    //    }
+    //  }
+    //})
   }
 
   loadConfig() {

@@ -76,6 +76,7 @@ class FavoriteLanguages extends Component {
     Taro.showLoading({title: GLOBAL_CONFIG.LOADING_TEXT})
     const { favoriteLanguages, itemId } = this.state
     const db = wx.cloud.database()
+    console.log('favoriteLanguages: ' + this.state)
     if (itemId && itemId.length > 0) {
       // 更新
       db.collection('languages').doc(itemId).update({

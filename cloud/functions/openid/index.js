@@ -2,7 +2,8 @@
 const cloud = require('wx-server-sdk')
 
 cloud.init({
-  env: 'gitter-prod-pkqn3',
+  traceUser: true,
+  env: 'dev-study-62lv2'
 })
 
 // 云函数入口函数

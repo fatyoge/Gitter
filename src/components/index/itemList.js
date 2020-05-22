@@ -4,6 +4,8 @@ import { View } from '@tarojs/components'
 
 import TrendingRepoItem from './trendingRepoItem'
 import TrendingDeveloperItem from './trendingDeveloperItem'
+import StudyCategoryItem from './studyCategoryItem'
+import ClassesItem from './classesItem';
 
 export default class ItemList extends Component {
 
@@ -23,17 +25,17 @@ export default class ItemList extends Component {
   }
 
   handleRepoClicked(item) {
-    let api = 'https://api.github.com/repos/' + item.author + '/' + item.name
-    let url = '/pages/repo/repo?url=' + encodeURI(api)
-    Taro.navigateTo({
-      url: url
-    })
+    //let api = 'https://api.github.com/repos/' + item.author + '/' + item.name
+    //let url = '/pages/repo/repo?url=' + encodeURI(api)
+    //Taro.navigateTo({
+    //  url: url
+    //})
   }
 
   handleDeveloperClicked(item) {
-    Taro.navigateTo({
-      url: '/pages/account/developerInfo?username=' + item.username
-    })
+    //Taro.navigateTo({
+    //  url: '/pages/account/developerInfo?username=' + item.username
+    //})
   }
 
   render() {
@@ -58,6 +60,26 @@ export default class ItemList extends Component {
           )
         })
       }
+      //编辑课程
+      case 2: {
+        list = itemList.map((item, index) => {
+          return (
+            <View key={index} onClick={this.handleRepoClicked.bind(this, item)}>
+              <StudyCategoryItem item={item} categoryType={categoryType} />
+            </View>
+          )
+        })
+      }
+      //快速打卡
+      // case 3: {
+      //   list = itemList.map((item, index) => {
+      //     return (
+      //       <View key={index} onClick={this.handleRepoClicked.bind(this, item)}>
+      //         <ClassesItem item={item} categoryType={categoryType} />
+      //       </View>
+      //     )
+      //   })
+      // }
     }
     return (
       <View>

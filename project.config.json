@@ -2,20 +2,36 @@
 	"miniprogramRoot": "dist/",
 	"projectname": "Gitter",
 	"description": "Gitter",
-	"appid": "wx2252b6835e7eb568",
+	"appid": "wx0c3f3de20eb078fb",
 	"cloudfunctionRoot": "cloud/functions/",
 	"setting": {
-		"urlCheck": true,
+		"urlCheck": false,
 		"es6": false,
 		"postcss": false,
+		"preloadBackgroundData": false,
 		"minified": false,
 		"newFeature": true,
-		"autoAudits": false
+		"coverView": true,
+		"nodeModules": true,
+		"autoAudits": false,
+		"showShadowRootInWxmlPanel": true,
+		"scopeDataCheck": false,
+		"checkInvalidKey": true,
+		"checkSiteMap": false,
+		"uploadWithSourceMap": true,
+		"babelSetting": {
+			"ignore": [],
+			"disablePlugins": [],
+			"outputPath": ""
+		},
+		"useCompilerModule": true,
+		"userConfirmedUseCompilerModuleSwitch": false
 	},
 	"compileType": "miniprogram",
 	"libVersion": "2.7.3",
 	"simulatorType": "wechat",
 	"simulatorPluginLibVersion": {},
+	"cloudfunctionTemplateRoot": "cloudfunctionTemplate",
 	"condition": {
 		"search": {
 			"current": -1,

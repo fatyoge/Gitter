@@ -34,7 +34,8 @@ export default class Segment extends Component {
 
   onActionConfig () {
     Taro.navigateTo({
-      url: '/pages/index/favoriteLanguages'
+      //url: '/pages/index/favoriteLanguages'
+      url: '/pages/index/quickClasses'
     })
   }
 
