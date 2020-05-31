@@ -11,7 +11,10 @@ import Segment from '../../components/index/segment'
 import Empty from '../../components/index/empty'
 
 import './index.less'
-import { get_today } from '../../utils/dateutil'
+import { get_today, json_splice, getJsonLength} from '../../utils/dateutil'
+import { default_selector1, default_selector2, default_index1, default_index3, default_selector3} from '../../utils/selector'
+
+
 
 class Index extends Component {
 
@@ -68,10 +71,97 @@ class Index extends Component {
         }],
         languages
       ],
-      job_col1:[
+      ready_classes_seletor:[
+
+      ],
+      ready_classes_selindex:[
+
+      ],
+      finish_classes_seletor:[
 
       ]
     }
+  }
+
+  loadClassList() {
+    console.log('function: loadClass')
+    let openid = getGlobalData('openid')
+    if (!openid) {
+      openid = Taro.getStorageSync('openid')
+    }
+
+    let that = this
+    wx.cloud.callFunction({
+      // 要调用的云函数名称
+      name: 'classes',
+      // 传递给云函数的event参数
+      data: {
+        type: 'study_record',
+        openid: openid,
+        date: get_today(),
+      }
+    }).then(res => {
+      console.log(res)
+      const {study_item, study_record, ready_classes_selindex, finish_classes, ready_classes, ready_classes_seletor, current} = this.state
+      let study_itemid_tmp = res.result.study_itemid_tmp
+      let study_record_tmp = res.result.study_record_tmp
+      let classes_tmp = res.result.classes_tmp
+      let finish_classes_tmp = []
+      let ready_classes_tmp = []
+      let ready_classes_seletor_tmp = []
+      let ready_classes_selindex_tmp = []
+      for (let cls in classes_tmp) {
+        cls = classes_tmp[cls]
+        if (cls.name in study_record_tmp) {
+          finish_classes_tmp.push(cls)
+        } else {
+          ready_classes_tmp.push(cls)
+          let col1 = default_selector1
+          let col2 = JSON.parse(JSON.stringify(default_selector2[cls.default_unit]))
+          if ('default_unit' in cls && cls.unit_name ==='int') {
+            col2.map(function(i){i['name'] = i['name'] + cls.unit_name}) 
+          }
+          //console.log("cls.default_unit")
+          //console.log(cls)
+          //console.log(col2)
+          let col1_index = default_index1[cls.default_unit]
+          let selector = [col1, col2]
+          let selindex = [col1_index, 0]
+          if (cls.default_unit === 'int') {
+            let col3_index = default_index3[cls.default_time]
+            selector.push(default_selector3)
+            selindex.push(col3_index)
+          }
+          ready_classes_seletor_tmp.push(selector)
+          ready_classes_selindex_tmp.push(selindex)
+          //console.log("ready_classes_seletor")
+          //console.log(ready_classes_seletor_tmp)
+          //console.log(ready_classes_selindex_tmp)
+        }
+      }
+      this.setState({
+        classes: classes_tmp,
+        study_itemid: study_itemid_tmp,
+        study_record: study_record_tmp,
+        finish_classes: finish_classes_tmp,
+        ready_classes: ready_classes_tmp,
+        // ready_switch:ready_switch_tmp,
+        // finish_switch:finish_switch_tmp,
+        ready_classes_seletor:ready_classes_seletor_tmp,
+        ready_classes_selindex:ready_classes_selindex_tmp,
+      }, () => {
+        Taro.pageScrollTo({
+          scrollTop: 0
+        })
+        if (current === 0) {
+          Taro.hideLoading()
+          Taro.stopPullDownRefresh()
+        }
+      })
+    }).catch(err => {
+      Taro.hideLoading()
+      Taro.stopPullDownRefresh()
+    })
   }
 
   loadClasses() {
@@ -83,10 +173,14 @@ class Index extends Component {
       openid = Taro.getStorageSync('openid')
     }
     console.log("openid:"+openid)
-    const {study_item, study_record, classes, finish_classes, ready_classes} = this.state
+    const {study_item, study_record, ready_classes_selindex, finish_classes, ready_classes, ready_classes_seletor} = this.state
     let study_itemid_tmp = ''
     let study_record_tmp = {}
     let classes_tmp = {}
+    let finish_classes_tmp = []
+    let ready_classes_tmp = []
+    let ready_classes_seletor_tmp = []
+    let ready_classes_selindex_tmp = []
     db.collection('study_record')
       .where({
         _openid: openid, // 当前用户 openid
@@ -108,7 +202,8 @@ class Index extends Component {
         Taro.hideLoading()
         console.error(err)
       })
-
+    console.log("study_record_tmp:"+study_itemid_tmp)
+    console.log(study_record_tmp)
     db.collection('classes')
       .where({
         _openid: openid, // 当前用户 openid
@@ -121,25 +216,52 @@ class Index extends Component {
           //  //itemId: res.data[0]._id,
           //  classes: res.data[0].classes,
           //})
+          
           classes_tmp = res.data[0].classes
+          console.log("study_record_tmp:"+study_itemid_tmp)
+          console.log(study_record_tmp)
           for (let cls in classes_tmp) {
+            cls = classes_tmp[cls]
             if (cls.name in study_record_tmp) {
-              finish_classes.unshift(classes_tmp[cls])
+              finish_classes_tmp.push(cls)
             } else {
-              ready_classes.unshift(classes_tmp[cls])
+              ready_classes_tmp.push(cls)
+              let col1 = default_selector1
+              let col2 = JSON.parse(JSON.stringify(default_selector2[cls.default_unit]))
+              if ('default_unit' in cls && cls.unit_name ==='int') {
+                col2.map(function(i){i['name'] = i['name'] + cls.unit_name}) 
+              }
+              //console.log("cls.default_unit")
+              //console.log(cls)
+              //console.log(col2)
+              let col1_index = default_index1[cls.default_unit]
+              let selector = [col1, col2]
+              let selindex = [col1_index, 0]
+              if (cls.default_unit === 'int') {
+                let col3_index = default_index3[cls.default_time]
+                selector.push(default_selector3)
+                selindex.push(col3_index)
+              }
+              ready_classes_seletor_tmp.push(selector)
+              ready_classes_selindex_tmp.push(selindex)
+              //console.log("ready_classes_seletor")
+              //console.log(ready_classes_seletor_tmp)
+              //console.log(ready_classes_selindex_tmp)
             }
           }
-          let ready_switch_tmp = [...Array(ready_classes.length).keys()].map(i => false)
-          let finish_switch_tmp = [...Array(finish_classes.length).keys()].map(i => true)
+          // let ready_switch_tmp = [...Array(ready_classes_tmp.length).keys()].map(i => false)
+          // let finish_switch_tmp = [...Array(finish_classes_tmp.length).keys()].map(i => true)
         
           that.setState({
             classes: classes_tmp,
             study_itemid: study_itemid_tmp,
             study_record: study_record_tmp,
-            finish_classes: finish_classes,
-            ready_classes: ready_classes,
-            ready_switch:ready_switch_tmp,
-            finish_switch:finish_switch_tmp,
+            finish_classes: finish_classes_tmp,
+            ready_classes: ready_classes_tmp,
+            // ready_switch:ready_switch_tmp,
+            // finish_switch:finish_switch_tmp,
+            ready_classes_seletor:ready_classes_seletor_tmp,
+            ready_classes_selindex:ready_classes_selindex_tmp,
           })
         }
       })
@@ -170,7 +292,7 @@ class Index extends Component {
       if (value) {
         Taro.showLoading({ title: GLOBAL_CONFIG.LOADING_TEXT })
         //this.loadLanguages()
-        this.loadClasses()
+        //this.loadClasses()
         this.loadItemList()
         this.loadCategoryList()
         this.loadNotice()
@@ -190,8 +312,6 @@ class Index extends Component {
     } catch (e) {
       // Do something when catch error
     } 
-
-
   }
 
   componentWillUnmount() { }
@@ -211,7 +331,8 @@ class Index extends Component {
   onPullDownRefresh() {
     this.loadItemList()
     this.loadCategoryList()
-    this.loadClasses()
+    //this.loadClasses()
+    this.loadClassList()
   }
 
   onPageScroll(obj) {
@@ -449,7 +570,7 @@ class Index extends Component {
     if (favoriteLanguages && favoriteLanguages.length > 0) {
       let language = favoriteLanguages[0]
       if (language.name !== 'All') {
-        favoriteLanguages.unshift({
+        favoriteLanguages.push({
           "urlParam": "",
           "name": "All"
         })
@@ -514,33 +635,136 @@ class Index extends Component {
   onclickAccordion(){
   }
   handleChange(item, index, e){
-    //console.log("item")
-    //console.log(e)
-    if(e['target']['value']) {
-      const { ready_switch } = this.state
-      ready_switch[index] = true
+    // console.log("handleChange")
+    // console.log(item)
+    // console.log(item.name)
+    // console.log(index)
+    // console.log(e)
+
+    if(!e['target']['value']) {
+      const { finish_classes, study_record, ready_classes} = this.state
+      let study_record_tmp = JSON.parse(JSON.stringify(study_record))
+      console.log(item.name in study_record_tmp)
+      console.log(study_record_tmp)
+      if (item.name in study_record_tmp){
+        console.log('delete study record:'+item.name)
+        // study_record_tmp = json_splice(study_record_tmp, item.name)
+        delete study_record_tmp[item.name]
+        console.log(study_record_tmp)
+      }
+      //study_record.splice(study_record.indexOf(item.name), 1)
+      finish_classes.splice(finish_classes.indexOf(item), 1)
+      ready_classes.push(item)
       this.setState({
-        popup: true,
-        popuptitle: 'test',
-        ready_switch_index: index,
-        ready_switch: ready_switch,
+        study_record: study_record_tmp,
+        ready_classes: ready_classes,
+        finish_classes: finish_classes,
+      }, ()=> {
+        this.saveFinishStudy()
+        //console.log(study_record)
       })
     }
   }
 
 
-  onReadyLayoutClose(value){
-    const { ready_switch, ready_switch_index } = this.state
-    console.log(ready_switch[ready_switch_index])
-    console.log(ready_switch_index)
-    console.log(ready_switch)
-    if (ready_switch[ready_switch_index]) {
-      ready_switch[ready_switch_index] = false
-      this.setState({
-        ready_switch: ready_switch,
-        popup: false
+  //onReadyLayoutClose(value){
+  //  const { ready_switch, ready_switch_index } = this.state
+  //  console.log(ready_switch[ready_switch_index])
+  //  console.log(ready_switch_index)
+  //  console.log(ready_switch)
+  //  if (ready_switch[ready_switch_index]) {
+  //    ready_switch[ready_switch_index] = false
+  //    this.setState({
+  //      ready_switch: ready_switch,
+  //      popup: false
+  //    })
+  //  }
+  //}
+
+  saveFinishStudy() {
+    let that = this
+    Taro.showLoading({title: GLOBAL_CONFIG.LOADING_TEXT})
+    const { study_record, study_itemid } = this.state
+    const db = wx.cloud.database()
+    console.log('save study_record')
+    console.log(study_record)
+    console.log(study_itemid)
+    if (study_itemid && study_itemid.length > 0) {
+      // 更新
+      //if (study_record.length > 0) {
+      if (getJsonLength(study_record) > 0) {
+        db.collection('study_record').doc(study_itemid).update({
+          data: {
+            study_record: study_record
+          }
+        })
+          .then(res => {
+            console.log(res)
+            Taro.pageScrollTo({
+              scrollTop: 0
+            })
+            Taro.hideLoading()
+            Taro.stopPullDownRefresh()
+          })
+          .catch(console.error)
+      } else {
+        db.collection('study_record').doc(study_itemid).remove()
+          .then(res => {
+            Taro.hideLoading()
+          })
+          .catch(console.error)
+      }
+    }else {
+     // 新增
+      db.collection('study_record').add({
+        // data 字段表示需新增的 JSON 数据
+        data: {
+          date: get_today(),
+          study_record: study_record
+        }
       })
+        .then(res => {
+          Taro.hideLoading()
+          console.log(res)
+          that.setState({
+            study_itemid: res._id
+          })
+        })
+        .catch(console.error)
     }
+  }
+
+  onReadyPickerComfirm(item,index,e){
+    // console.log("onReadyPickerComfirm："+index)
+    // console.log(item)
+    // console.log(e)
+    const {finish_classes, study_record, ready_classes, ready_classes_seletor} = this.state
+    // console.log(ready_classes_seletor[index])
+    // console.log(e.detail.value[0])
+    study_record[item.name] = {
+      "name": item.name,
+      "unit_name": ready_classes_seletor[index][0][e.detail.value[0]]['value'],
+      "total_cnt": e.detail.value.length > 2 ? ready_classes_seletor[index][1][e.detail.value[1]]['value'] : 1,
+      "total_time": e.detail.value.length > 2 ? ready_classes_seletor[index][2][e.detail.value[2]]['value'] : ready_classes_seletor[1][e.detail.value[1]]
+    }
+    console.log(study_record)
+    finish_classes.push(item)
+    ready_classes.splice(ready_classes.indexOf(item), 1)
+    ready_classes_seletor.splice(index, 1)
+    this.setState({
+      study_record:study_record,
+      finish_classes:finish_classes,
+      ready_classes:ready_classes,
+      ready_classes_seletor:ready_classes_seletor,
+    }, ()=> {
+      this.saveFinishStudy()
+    })
+  }
+
+  onReadyPickerChange(item,index,e){
+    console.log("onReadyPickerChange："+index)
+    console.log(item)
+    console.log(e)
   }
 
   onSelection(value) {
@@ -563,18 +787,18 @@ class Index extends Component {
     //console.log(classes)
     //for (let cls in classes) {
     //  //console.log("cls:" + cls)
-    //  classlist.unshift(classes[cls])
+    //  classlist.push(classes[cls])
     //}
     
-    //console.log('ready_classes:')
-    //console.log(ready_classes)
+    console.log('ready_classes:')
+    console.log(ready_classes)
     let finish_list = finish_classes.map((item, index) => {
       return (
         <AtListItem
           key={index}
           title={item.name}
-          isSwitch
-          //checked={this.state.finish_switch[index]}
+          isSwitch={true}
+          switchIsCheck={true}
           onSwitchChange={this.handleChange.bind(this, item, index)}
         />
       )
@@ -582,13 +806,19 @@ class Index extends Component {
 
     let ready_list = ready_classes.map((item, index) => {
       return (
-        <AtListItem
+        <Picker mode='multiSelector'
           key={index}
-          title={item.name}
-          isSwitch
-          switchIsCheck={this.state.ready_switch[index]}
-          onSwitchChange={this.handleChange.bind(this, item, index)}
-        />
+          range={this.state.ready_classes_seletor[index]}
+          rangeKey={'name'}
+          value={this.state.ready_classes_selindex[index]}
+          onChange={this.onReadyPickerComfirm.bind(this, item, index)}
+          onColumnChange={this.onReadyPickerChange.bind(this, item, index)}
+          // onCancel={this.onReadyLayoutClose}
+        >
+          <AtList>
+            <AtListItem key={index} title={item.name} />
+          </AtList>
+        </Picker>
       )
     })
 
@@ -624,20 +854,12 @@ class Index extends Component {
             <AtAccordion
               open={true}
               title='待完成'>
-                <AtForm>
-                  <AtList>
                     {ready_list}
-                  </AtList>
-                </AtForm>
             </AtAccordion>
             <AtAccordion
               open={true}
               title='已完成'>
-                <AtForm>
-                  <AtList>
                     {finish_list}
-                  </AtList>
-                </AtForm>
             </AtAccordion>
             </View>
             : <Empty />)
@@ -648,21 +870,21 @@ class Index extends Component {
           (<ItemList itemList={finish_classes} type={3} categoryType={categoryType} />)
         }
         {
-          popup &&
-          <View>
-            <Picker mode='multiSelector'
-              range={this.state.range}
-              rangeKey={'name'}
-              onChange={this.onChange}
-              onCancel={this.onReadyLayoutClose}
-            >
-              <View className='filter' animation={this.state.animation}>
-                <Text className='category'>{this.state.category.name}</Text>
-                &
-                <Text className='language'>{this.state.language.name}</Text>
-              </View>
-            </Picker>
-          </View>
+          // popup &&
+          // <View>
+          //   <Picker mode='multiSelector'
+          //     range={this.state.range}
+          //     rangeKey={'name'}
+          //     onChange={this.onChange}
+          //     onCancel={this.onReadyLayoutClose}
+          //   >
+          //     <View className='filter' animation={this.state.animation}>
+          //       <Text className='category'>{this.state.category.name}</Text>
+          //       &
+          //       <Text className='language'>{this.state.language.name}</Text>
+          //     </View>
+          //   </Picker>
+          // </View>
         }
       </View>
     )
